@@ -27,7 +27,7 @@ if uploaded_file:
     if namespace in existing_namespaces:
         st.info(f"This RFP (`{namespace}`) has already been uploaded and indexed.")
     else:
-        st.write("🔍 Processing PDF...")
+        st.write(" Processing PDF...")
         chunks = process_pdf_chunks(tmp_path)
         embeddings = embed_chunks(chunks)
         store_vectors_to_namespace(index, namespace, chunks, embeddings, cleaned_pdf_name)
