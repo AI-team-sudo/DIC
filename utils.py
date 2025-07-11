@@ -3,20 +3,17 @@ import PyPDF2
 import hashlib
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
-from pinecone import Pinecone, ServerlessSpec  # <-- Important update
- 
-# Load environment variables
+from pinecone import Pinecone, ServerlessSpec
+
 load_dotenv()
  
-# Initialize Pinecone
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_ENV = os.getenv("PINECONE_ENV")  # Optional if you're using it
+PINECONE_ENV = os.getenv("PINECONE_ENV")  
 pc = Pinecone(api_key=PINECONE_API_KEY)
  
-# Define index name
+
 index_name = "rfp-qna"
  
-# Load embedding model
 model = SentenceTransformer("thenlper/gte-large")
  
 def hash_file(file_bytes):
@@ -37,16 +34,17 @@ def ensure_index_exists():
             name=index_name,
             dimension=1024,
             metric="cosine",
-            spec=ServerlessSpec(  # <-- new required field
-                cloud="aws",       # or "gcp"
-                region="us-east-1" # change if needed
+            spec=ServerlessSpec(
+                cloud="aws",
+                region="us-east-1"
             )
         )
     return pc.Index(index_name)
  
-def store_vectors_to_namespace(index, namespace, chunks, embeddings):
+def store_vectors_to_namespace(index, namespace, chunks, embeddings, pdf_name):
+    cleaned_pdf_name = pdf_name.replace(".pdf", "").replace(" ", "_").lower()
     vectors = [
-        (f"{namespace}-chunk-{i}", embeddings[i], {"text": chunks[i]})
+        (f"{cleaned_pdf_name}-chunk-{i}", embeddings[i], {"text": chunks[i]})
         for i in range(len(chunks))
     ]
     index.upsert(vectors=vectors, namespace=namespace)
